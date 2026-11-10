@@ -9,9 +9,9 @@ Repository: https://github.com/psunthar/ancient-human-ancestry-atlas
 - [README](https://github.com/psunthar/ancient-human-ancestry-atlas/blob/main/README.md): purpose, caveats, how to run, code map
 - [data/SOURCES.txt](https://github.com/psunthar/ancient-human-ancestry-atlas/blob/main/data/SOURCES.txt): source, citation and licence of each data file
 - js/data/events.js, js/data/tree.js, js/data/populations.js, js/data/routes.js: the content (dated events, lineages, population ranges, migration routes)
-- js/sealevel.js, js/ice.js, js/shelf.js: independent runtime loaders for sea level (Spratt and Lisiecki 2016), ice sheets (PaleoMIST 1.0) and continental shelf (ETOPO 2022)
+- js/sealevel.js, js/ice.js, js/icestages.js, js/shelf.js: independent runtime loaders for sea level (Spratt and Lisiecki 2016), ice sheets (PaleoMIST 1.0 for 0 to 80 ka; Batchelor et al. 2019 stage outlines for 72 to 279 ka) and continental shelf (ETOPO 2022)
 
 ## Caveats for summaries
 - Dates, routes and circle sizes are schematic. Tags mark each item as in the book, after the book, hypothesis, or background.
-- Ice before 80,000 years ago is a schematic estimate, not data.
+- Ice between 80,000 and 279,000 years ago is one outline per glacial stage (Northern Hemisphere), and gaps between stages are schematic, not data.
 - Cite David Reich's book and the papers in data/SOURCES.txt for factual claims, not this atlas.

@@ -12,7 +12,7 @@ Source: PaleoMIST 1.0 global ice sheet reconstruction, file ice_reconstruction/g
 Dataset: Gowan, E.J. (2019): Global ice sheet reconstruction for the past 80000 years. PANGAEA, doi:10.1594/PANGAEA.905800. https://doi.pangaea.de/10.1594/PANGAEA.905800
 Paper: Gowan, E.J., Zhang, X., Khosravi, S. et al. (2021) A new global ice sheet reconstruction for the past 80 000 years. Nature Communications 12, 1199, doi:10.1038/s41467-021-21469-w
 License: CC BY 4.0 (stated in the PANGAEA metadata). Changes made: contour of grounded ice thickness >= 10 m after 2x bilinear upsampling, clipped to 85N-58S, simplified (0.25 deg tolerance), polygons under 0.6 square degrees dropped, coordinates rounded to 0.1 deg. Built by tools/build_ice_shelf.py. Accessed 2026-11-10.
-Not covered: before 80 ka (the page falls back to schematic outlines; see js/data/ice_schematic.js).
+Not covered: before 80 ka (see ice_batchelor2019_stages.geojson below; gaps there fall back to schematic outlines, js/data/ice_schematic.js).
 Note: the dataset is a model-and-constraint reconstruction (ICESHEET with isostatic adjustment). Time slices are 2.5 kyr apart, so the margins are coarse in time as well as space.
 Not used: Dalton et al. NADI-2 / DATED-1 margins. PaleoMIST (which uses those margins as constraints) covers North America, Eurasia and the whole globe from one consistent source, so one dataset was used instead of two.
 
@@ -21,3 +21,12 @@ Source: ETOPO 2022 Global Relief Model, 60 arc-second bed elevation (ice-sheet b
 License: US Government work, public domain (copyright line in the file: DOC/NOAA/NESDIS/NCEI). Cite NOAA NCEI as the source.
 Changes made: Gaussian smoothing (sigma 1 cell), filled contours between 0-30, 30-60, 60-90 and 90-130 m below present sea level, simplified (0.15 deg), small polygons dropped, rounded to 0.01 deg. Built by tools/build_ice_shelf.py.
 Not used: GEBCO (ETOPO 2022 is served in subsets, GEBCO needs a multi-GB download for this purpose).
+
+
+==== ice_batchelor2019_stages.geojson (derived) ====
+Source: best-estimate Northern Hemisphere ice-sheet reconstructions for MIS 5a (72-86 ka), 5b (86-92), 5c (92-108), 5d (108-117), 6 (132-190) and 8 (243-279), from the shapefiles at https://osf.io/7jen3/ (Open Science Framework), files "<stage>_best_estimate.shp" in each stage's "hypothesised ice-sheet reconstructions" folder. Time-slice limits are those in the README on that page. The maximum and minimum reconstructions (also provided there) were not used.
+Paper: Batchelor, C.L., Margold, M., Krapp, M., Murton, D.K., Dalton, A.S., Gibbard, P.L., Stokes, C.R., Murton, J.B., Manica, A. (2019) The configuration of Northern Hemisphere ice sheets through the Quaternary. Nature Communications 10, 3713, doi:10.1038/s41467-019-11601-2
+License: the paper is CC BY 4.0. The OSF project and the shapefile metadata state no license for the shapefiles, so their reuse terms are UNCONFIRMED. They are credited here and in the page, but the authors should be asked before treating the redistributed, simplified outlines as freely licensed.
+Changes made: dissolved overlapping parts, dropped pieces under 20,000 km2, simplified (12 km in the projection, then 0.2 deg), reprojected from North Pole Lambert azimuthal equal-area to longitude/latitude, split along the 180 deg meridian, clipped to 0-85N, rounded to 0.1 deg. Built by tools/build_ice_stages.py from the downloaded shapefiles. Accessed 2026-11-10.
+Caveats (from the authors): outlines show the maximum extent at any time inside a stage, do not capture time-transgressive margins, cover ice sheets above 50,000 km2 only, and should not be used for local-scale studies. For regions or stages with no data the authors used the configuration of another stage with a similar benthic d18O value. Not available: 117-132, 190-243 and 279-300 ka, and the Southern Hemisphere.
+Download steps: list the folders through https://api.osf.io/v2/nodes/7jen3/files/osfstorage/ and fetch the .shp, .shx, .dbf and .prj of each best_estimate file into one folder named <STAGE>_<STAGE>_best_estimate.* (for example MIS6_MIS6_best_estimate.shp).

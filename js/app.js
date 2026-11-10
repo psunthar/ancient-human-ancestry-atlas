@@ -3,6 +3,7 @@ import {ICE} from './data/ice_schematic.js';
 import {loadSeaLevel} from './sealevel.js';
 import {loadIce} from './ice.js';
 import {loadShelf} from './shelf.js';
+import {loadIceStages} from './icestages.js';
 import {GROUPS,GCOL,GBY} from './data/populations.js';
 import {ROUTES} from './data/routes.js';
 import {EVENTS} from './data/events.js';
@@ -27,14 +28,15 @@ function pFromT(t){for(var i=1;i<TK.length;i++){if(t>=TK[i]){var f=(TK[i-1]-t)/(
 function iceFrac(sl){return clamp((-sl-10)/115,0,1);}
 
 /* ---------- runtime data layers (each is a separate module that loads its own file) ---------- */
-var sea, ice, shelf;
+var sea, ice, stages, shelf;
 try{
   var layers=await Promise.all([
     loadSeaLevel('data/sealevel_spratt_lisiecki_2016_0-300ka.csv'),
-    loadIce('data/ice_paleomist_1.0.geojson'),
-    loadShelf('data/shelf_etopo2022.geojson')
+    loadIce('data/ice_paleomist_1.0.geojson',2),
+    loadShelf('data/shelf_etopo2022.geojson'),
+    loadIceStages('data/ice_batchelor2019_stages.geojson')
   ]);
-  sea=layers[0];ice=layers[1];shelf=layers[2];
+  sea=layers[0];ice=layers[1];shelf=layers[2];stages=layers[3];
 }catch(err){
   var m=document.createElement('p');m.className='note';m.setAttribute('role','alert');
   m.textContent='Map data could not be loaded ('+err.message+'). If you opened this page from a file, serve the folder instead, for example: python3 -m http.server';
@@ -54,6 +56,16 @@ el('path',{d:polyPath(BLACKSEA),fill:'var(--sea)'},gLand);
 el('path',{d:polyPath(CASPIAN),fill:'var(--sea)'},gLand);
 el('path',{d:polyPath(GREENLAND),fill:'var(--ice)',stroke:'var(--ice-line)','stroke-width':0.8,'stroke-linejoin':'round'},gIce);
 ice.slices.forEach(function(s){s.el=el('path',{d:multiPath(s.polygons),fill:'var(--ice)',stroke:'var(--ice-line)','stroke-width':0.6,'stroke-linejoin':'round','fill-rule':'evenodd',opacity:0},gIce);});
+/* older stage outlines (Northern Hemisphere): each polygon is shrunk about its own centre with sea level, relative to the stage's highest ice fraction */
+stages.slices.forEach(function(st){
+  var fm=0;for(var a=st.from;a<=st.to;a+=1){fm=Math.max(fm,iceFrac(sea.at(a)));}
+  st.frMax=Math.max(fm,0.05);
+  st.parts=st.polygons.map(function(rings){
+    var xs=rings[0].map(function(q){return X(q[0]);}),ys=rings[0].map(function(q){return Y(q[1]);});
+    var c=[(Math.min.apply(null,xs)+Math.max.apply(null,xs))/2,(Math.min.apply(null,ys)+Math.max.apply(null,ys))/2];
+    return {c:c,el:el('path',{d:rings.map(polyPath).join(''),fill:'var(--ice)',stroke:'var(--ice-line)','stroke-width':0.6,'stroke-linejoin':'round','fill-rule':'evenodd',opacity:0},gIce)};
+  });
+});
 ICE.forEach(function(s){var c=centroid(s.p);s.c=c;s.el=el('path',{d:polyPath(s.p),fill:'var(--ice)',stroke:'var(--ice-line)','stroke-width':0.9,'stroke-linejoin':'round',opacity:0.92},gIce);});
 
 /* routes */
@@ -213,7 +225,19 @@ function update(){
     var ow={};
     ice.layers(t).forEach(function(l){ow[l.index]=l.opacity;});
     ice.slices.forEach(function(s,i){s.el.setAttribute('opacity',((ow[i]||0)*0.92).toFixed(3));});
-    var sw=ice.schematicWeight(t), sc=Math.pow(fr,0.65);
+    var sc=Math.pow(fr,0.65);
+    var stl=stages.layers(t,ice.maxAge),stOp={},stCover=0;
+    stl.forEach(function(l){stOp[l.index]=l.opacity;stCover=Math.max(stCover,l.opacity);});
+    stages.slices.forEach(function(st,i){
+      var o=stOp[i]||0,k=Math.min(1,Math.pow(fr/st.frMax,0.65));
+      st.parts.forEach(function(pt){
+        if(o<=0||k<0.04){pt.el.setAttribute('opacity',0);return;}
+        pt.el.setAttribute('opacity',(0.92*o).toFixed(3));
+        pt.el.setAttribute('transform','translate('+pt.c[0].toFixed(1)+' '+pt.c[1].toFixed(1)+') scale('+k.toFixed(3)+') translate('+(-pt.c[0]).toFixed(1)+' '+(-pt.c[1]).toFixed(1)+')');
+      });
+    });
+    /* schematic outlines only where neither the real slices nor the stage outlines apply */
+    var sw=1-Math.max(1-ice.schematicWeight(t),stCover);
     ICE.forEach(function(s){
       if(sw<=0||sc<0.04){s.el.setAttribute('opacity',0);return;}
       s.el.setAttribute('opacity',(0.92*sw).toFixed(3));

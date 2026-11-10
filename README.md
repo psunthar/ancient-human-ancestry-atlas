@@ -32,22 +32,25 @@ Settings > Pages > Deploy from a branch > `main` > `/ (root)`. The site appears 
 | `js/app.js` | the app: time mapping, map drawing, tree, controls |
 | `js/data/*.js` | hand-typed content: `geography`, `populations`, `routes`, `events`, `tree`, `ice_schematic` |
 | `js/sealevel.js` | sea-level layer: loads a CSV at run time |
-| `js/ice.js` | ice-sheet layer: loads time-sliced GeoJSON at run time |
+| `js/ice.js` | ice-sheet layer, 0 to 80 ka: loads time-sliced GeoJSON at run time |
+| `js/icestages.js` | ice-sheet layer, 72 to 279 ka: loads one outline per marine isotope stage |
 | `js/shelf.js` | continental-shelf layer: loads depth-band GeoJSON at run time |
 | `data/` | the CSV and GeoJSON files, and `SOURCES.txt` (source, citation, licence of each) |
 | `atlas-standalone.html` | generated single-file copy that opens from disk (do not edit) |
 | `tools/build_standalone.py` | builds `atlas-standalone.html` from the sources (standard library only) |
+| `tools/build_ice_stages.py` | rebuilds the older ice GeoJSON from the Batchelor et al. shapefiles |
 | `tools/build_ice_shelf.py` | rebuilds the ice and shelf GeoJSON from the original datasets |
 | `docs/HANDOFF.md` | context and starter prompt for continuing the work |
 | `llms.txt`, `robots.txt`, `sitemap.xml` | discovery files for AI agents and search engines |
 
-The three data layers (`sealevel.js`, `ice.js`, `shelf.js`) are independent modules. Each fetches its own file and exposes a small interface, so a layer can be swapped for another dataset without touching the rest of the app.
+The data layers (`sealevel.js`, `ice.js`, `icestages.js`, `shelf.js`) are independent modules. Each fetches its own file and exposes a small interface, so a layer can be swapped for another dataset without touching the rest of the app.
 
 ## Data layers
 
 - **Sea level**: Spratt and Lisiecki (2016) stack, shifted so 0 ka reads 0 m (the stack gives +8.5 m for the present). After the shift the last interglacial peak (about 121 ka) is about 5 m below today.
 - **Ice sheets, 0 to 80 ka**: PaleoMIST 1.0 (Gowan et al. 2021), grounded ice thicker than 10 m, one slice every 2,500 years, cross-faded between slices.
-- **Ice sheets, before 80 ka**: schematic outlines, not data (the last glacial maximum shape scaled by sea level).
+- **Ice sheets, 72 to 279 ka**: Batchelor et al. (2019) best-estimate outlines for marine isotope stages 5a, 5b, 5c, 5d, 6 and 8 (Northern Hemisphere only). Each is the extent at the height of its stage, shrunk with sea level inside the stage (my simplification). Reuse terms for these shapefiles are unconfirmed; see `data/SOURCES.txt`.
+- **Ice sheets, gaps** (about 117 to 132, 190 to 243 and 279 to 300 ka, and the Southern Hemisphere): schematic outlines, not data (the last glacial maximum shape scaled by sea level).
 - **Exposed shelf**: ETOPO 2022 present-day depth bands (0 to 30, 30 to 60, 60 to 90, 90 to 130 m); isostatic movement is ignored.
 
 ## Code map (`js/app.js`, search for these comment markers)
