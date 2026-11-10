@@ -1,63 +1,80 @@
 # Timeline Atlas of Ancient Human Ancestry
 
-Subtitle on the page: A hypothesis of human origins, migrations, and mixing of populations from David Reich's book "Who We Are and How We Got Here".
+**Live page: https://psunthar.github.io/ancient-human-ancestry-atlas/**
 
-A single-page interactive atlas for reading David Reich's *Who We Are and How We Got Here*.
-A time slider runs from 300,000 years ago to the present. It shows ice sheets, sea level and
-exposed land, population ranges, migration routes, mixing events, and a lineage tree
-that follows the same time axis.
+An interactive timeline map of human origins, migrations and population mixing from 300,000 years ago to the present. It animates the hypotheses in David Reich's book *Who We Are and How We Got Here* (2018): Out of Africa, mixing with Neanderthals and Denisovans, the peopling of Australasia and the Americas, the spread of farming, the Steppe expansion, and the formation of present-day South Asians. A lineage tree on the same time axis shows who mixed with whom. Ice sheets, sea level and land exposed by lower sea level are drawn from published datasets.
+
+> **Work in progress.** This atlas shows the hypotheses of the book, as the author reads them, plus a few later results (tagged "After the book"). It is not a settled account of human history. Dates, lineages, routes and the size of the population circles are schematic and are still being reviewed. For factual claims cite the book and the papers listed in `data/SOURCES.txt`, not this atlas.
+
+Keywords: human evolution, ancient DNA, archaeogenetics, human migration map, Out of Africa, Neanderthal admixture, Denisovans, population genetics, David Reich, interactive timeline, ice age, sea level, Sahul, Sunda, Beringia, Indus Valley, Yamnaya.
 
 ## Run it
 
-No build step and no dependencies. Open `index.html` in a browser, or serve the folder:
+No build step and no dependencies. The page loads data files at run time, so serve the folder over HTTP (opening `index.html` directly from disk will not work):
 
     python3 -m http.server 8000
-
-The only external resource is the Google Fonts stylesheet. If it is blocked, system fonts are used.
+    # then open http://localhost:8000/
 
 ## Publish on GitHub Pages
 
-1. Push this folder to a repository.
-2. Settings > Pages > deploy from the main branch, root folder.
-3. The site appears at `https://<user>.github.io/<repo>/`.
+Settings > Pages > Deploy from a branch > `main` > `/ (root)`. The site appears at `https://<user>.github.io/<repo>/`.
 
 ## Files
 
-- `index.html`: the whole app (HTML, CSS, JavaScript, data) in one file, about 57 KB.
-- `data/sealevel_spratt_lisiecki_2016_0-300ka.csv`: a published sea-level curve. NOT used by the page yet.
-- `data/SOURCES.txt`: source, citation and license notes for that CSV.
-- `docs/HANDOFF.md`: context and a starter prompt for continuing the work in Claude Code.
+| Path | What it is |
+|---|---|
+| `index.html` | page structure, text, search and social metadata |
+| `css/style.css` | styles |
+| `js/app.js` | the app: time mapping, map drawing, tree, controls |
+| `js/data/*.js` | hand-typed content: `geography`, `populations`, `routes`, `events`, `tree`, `ice_schematic` |
+| `js/sealevel.js` | sea-level layer: loads a CSV at run time |
+| `js/ice.js` | ice-sheet layer: loads time-sliced GeoJSON at run time |
+| `js/shelf.js` | continental-shelf layer: loads depth-band GeoJSON at run time |
+| `data/` | the CSV and GeoJSON files, and `SOURCES.txt` (source, citation, licence of each) |
+| `tools/build_ice_shelf.py` | rebuilds the ice and shelf GeoJSON from the original datasets |
+| `docs/HANDOFF.md` | context and starter prompt for continuing the work |
+| `llms.txt`, `robots.txt`, `sitemap.xml` | discovery files for AI agents and search engines |
 
-## Code map (`index.html`, search for these comment markers)
+The three data layers (`sealevel.js`, `ice.js`, `shelf.js`) are independent modules. Each fetches its own file and exposes a small interface, so a layer can be swapped for another dataset without touching the rest of the app.
+
+## Data layers
+
+- **Sea level**: Spratt and Lisiecki (2016) stack, shifted so 0 ka reads 0 m (the stack gives +8.5 m for the present). After the shift the last interglacial peak (about 121 ka) is about 5 m below today.
+- **Ice sheets, 0 to 80 ka**: PaleoMIST 1.0 (Gowan et al. 2021), grounded ice thicker than 10 m, one slice every 2,500 years, cross-faded between slices.
+- **Ice sheets, before 80 ka**: schematic outlines, not data (the last glacial maximum shape scaled by sea level).
+- **Exposed shelf**: ETOPO 2022 present-day depth bands (0 to 30, 30 to 60, 60 to 90, 90 to 130 m); isostatic movement is ignored.
+
+## Code map (`js/app.js`, search for these comment markers)
 
 | Section | What it holds |
 |---|---|
-| `time mapping` | `PK`/`TK` arrays: piecewise-linear map between slider position and years ago. Shared by slider and tree. |
-| `sea level, approximate` | `SLK`: hand-typed sea-level curve `[kya, meters]`. `iceFrac()` turns sea level into an ice fraction. |
-| `geography` | `LAND`, `SHELF` (areas that become land below a depth threshold), `ICE` (last-glacial-maximum outlines, scaled by ice fraction), `GREENLAND`. Coordinates are `[lon, lat]`. |
-| `populations` | `GROUPS`: bubbles with keyframes `[kya, lon, lat, radius_deg]`. |
-| `routes` | `ROUTES`: paths with continuous longitudes (values above 180 continue past the date line). `dash:true` draws a sea crossing. |
-| `events` | `EVENTS`: cards and map markers. `tag` is `book`, `after`, `hyp` or `ctx`. `lon:null` means no marker. |
-| `lineage tree` | `LANES`, `LINKS` (mixing arrows), `MARKS` (cross-in-circle markers on lanes). |
-| `state and update` | `update()` redraws everything for the current time. `applyScale()` keeps labels and lines a constant size when the region zoom changes. |
+| `time mapping` | `PK`/`TK`: piecewise-linear map between slider position and years ago, shared by slider and tree |
+| `runtime data layers` | loads sea level, ice and shelf before the first draw; shows an error if a file is missing |
+| `DOM setup` | draws land, shelf, ice, routes, population circles and event markers |
+| `state and update` | `update()` redraws everything for the current time; `applyScale()` keeps labels and lines a constant size when the region zoom changes |
 
-To add an event: add an object to `EVENTS` (and a bubble, route, lane link or mark if it needs one).
+Content lives in `js/data/`: `GROUPS` (circles with keyframes `[kya, lon, lat, radius_deg]`), `ROUTES` (paths; longitudes above 180 continue past the date line; `dash:true` is a sea crossing), `EVENTS` (cards and markers; `tag` is `book`, `after`, `hyp` or `ctx`), `LANES`, `LINKS` and `MARKS` (lineage tree). To add an event, add an object to `EVENTS`, and a circle, route, lane link or mark if it needs one.
 
 ## What is approximate
 
-- Sea level, ice-sheet outlines, shelf outlines and depth thresholds are hand-typed approximations, not data exports. Ice outlines are the last glacial maximum shape scaled by sea level, which is not how real ice sheets changed.
-- Population positions and routes are schematic.
+- Land and coast outlines are coarse hand-typed shapes.
+- Population positions, routes and circle sizes are schematic.
 - Tags (`book`, `after`, `hyp`, `ctx`) are the author's reading of the book. Check them against your edition.
 - Africa after 60,000 years ago, the Pacific islands and the Bantu expansion are not drawn.
 
-## Sources used for specific items
+## Sources
 
-- Shinde et al. 2019, *Cell* (Rakhigarhi genome), and Narasimhan et al. 2019, *Science* 365:eaat7487 (South and Central Asia).
+Full source, version, licence and changes for each data file are in `data/SOURCES.txt`. Main references:
+
+- Reich, D. (2018) *Who We Are and How We Got Here*. Pantheon.
+- Spratt and Lisiecki (2016), *Climate of the Past* 12:1079, doi:10.5194/cp-12-1079-2016.
+- Gowan et al. (2021), *Nature Communications* 12:1199, doi:10.1038/s41467-021-21469-w; data doi:10.1594/PANGAEA.905800.
+- NOAA NCEI (2022), ETOPO 2022 Global Relief Model, doi:10.25921/fd45-gt74.
+- Shinde et al. 2019, *Cell*, and Narasimhan et al. 2019, *Science* 365:eaat7487 (South and Central Asia).
 - Bird et al. 2019, *Scientific Reports* (sea crossings through Wallacea).
-- Spratt and Lisiecki 2016, *Climate of the Past* 12:1079 (sea-level curve in `data/`).
 
-## Licenses and credits (to do)
+The book is paraphrased in short summaries; no passages are copied.
 
-- No license has been chosen for the code. Add one (for example MIT) and your name.
-- The book is paraphrased in short summaries. Do not paste passages from it.
-- If the sea-level CSV is redistributed, confirm the license of the Spratt and Lisiecki data first (see `data/SOURCES.txt`).
+## Licence
+
+Created by P Sunthar. The code, text and original content of this project are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (see `LICENSE`): attribution, non-commercial, share alike. The data files under `data/` keep the licences of their sources (CC BY 4.0, public domain and others), listed in `data/SOURCES.txt`.
