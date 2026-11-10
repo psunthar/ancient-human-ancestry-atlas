@@ -1,4 +1,4 @@
-# Timeline Atlas of Ancient Human Ancestry
+# Ahaa! Timeline Atlas of Ancient Human Ancestry
 
 **Live page: https://psunthar.github.io/ancient-human-ancestry-atlas/**
 
