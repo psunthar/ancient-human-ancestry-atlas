@@ -90,3 +90,4 @@ svg.tree{display:block;min-width:860px;width:100%;height:auto;touch-action:pan-y
 .note li{margin:3px 0}
 a{color:var(--accent)}
 section{margin-top:24px}
+.wip{margin:10px 0 8px;padding:9px 12px;border:1px solid var(--tag-after);border-left-width:4px;border-radius:8px;background:var(--panel);color:var(--ink);font-size:14px;max-width:80ch}

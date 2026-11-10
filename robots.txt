@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://psunthar.github.io/ancient-human-ancestry-atlas/sitemap.xml
