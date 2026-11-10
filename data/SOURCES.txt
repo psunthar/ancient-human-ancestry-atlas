@@ -1,6 +1,7 @@
 sealevel_spratt_lisiecki_2016_0-300ka.csv
 Data: Spratt & Lisiecki (2016) sea-level stack, column SeaLev_shortPC1 (0-430 ka PC1) with 95% CI, rows 0-300 ka at 1 kyr steps, rounded to 0.1 m. Unmodified apart from rounding/column rename.
-Obtained via: https://raw.githubusercontent.com/benmarwick/gsloid/master/data/spratt2016.rda (R package gsloid 0.2.0 by B. Marwick, MIT license for the package); gsloid says it was copied from https://www.ncei.noaa.gov/access/paleo-search/study/19982 (not reachable from sandbox, not independently verified).
-Citation: Spratt, R.M. & Lisiecki, L.E. (2016) A Late Pleistocene sea level stack. Climate of the Past 12, 1079-1092, doi:10.5194/cp-12-1-2016.
+Obtained via: https://raw.githubusercontent.com/benmarwick/gsloid/master/data/spratt2016.rda (R package gsloid 0.2.0 by B. Marwick, MIT license for the package); gsloid says it was copied from https://www.ncei.noaa.gov/access/paleo-search/study/19982 (verified: all 301 rows of the three columns used match the original NOAA file https://www.ncei.noaa.gov/pub/data/paleo/contributions_by_author/spratt2016/spratt2016.txt to within the 0.1 m rounding).
+Citation: Spratt, R.M. & Lisiecki, L.E. (2016) A Late Pleistocene sea level stack. Climate of the Past 12, 1079-1092, doi:10.5194/cp-12-1079-2016.
 License of underlying data: not stated in the files retrieved; paper is CC BY 3.0 (unverified here). Check before redistribution.
-Note: the file gives +8.5 m at 0 ka (as in source); the stack is a PC1 reconstruction, not anchored to 0 m today.
+Note: the file gives +8.5 m at 0 ka (as in source); the stack is a PC1 reconstruction, not anchored to 0 m today. The page (js/sealevel.js) subtracts the 0 ka value at load time; the CSV itself is not modified.
+NOAA's file header asks users to cite the original publication, the online resource and the date accessed (accessed 2026-11-10).

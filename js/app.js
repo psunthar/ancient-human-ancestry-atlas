@@ -1,5 +1,5 @@
 import {LAND,BLACKSEA,CASPIAN,SHELF,ICE,GREENLAND} from './data/geography.js';
-import {SLK} from './data/sealevel.js';
+import {loadSeaLevel} from './sealevel.js';
 import {GROUPS,GCOL,GBY} from './data/populations.js';
 import {ROUTES} from './data/routes.js';
 import {EVENTS} from './data/events.js';
@@ -21,7 +21,6 @@ var PK=[0,0.14,0.28,0.50,0.72,0.88,1], TK=[300,130,60,25,10,4,0];
 function tFromP(p){for(var i=1;i<PK.length;i++){if(p<=PK[i]){var f=(p-PK[i-1])/(PK[i]-PK[i-1]);return TK[i-1]+(TK[i]-TK[i-1])*f;}}return 0;}
 function pFromT(t){for(var i=1;i<TK.length;i++){if(t>=TK[i]){var f=(TK[i-1]-t)/(TK[i-1]-TK[i]);return PK[i-1]+(PK[i]-PK[i-1])*f;}}return 1;}
 
-function slAt(t){for(var i=1;i<SLK.length;i++){if(t<=SLK[i][0]){var a=SLK[i-1],b=SLK[i];var f=(t-a[0])/(b[0]-a[0]);return a[1]+(b[1]-a[1])*f;}}return SLK[SLK.length-1][1];}
 function iceFrac(sl){return clamp((-sl-10)/115,0,1);}
 
 /* ---------- DOM setup ---------- */
@@ -175,7 +174,7 @@ function applyScale(){
 
 function update(){
   var t=tFromP(state.p);
-  var sl=slAt(t), fr=iceFrac(sl);
+  var sl=sea.at(t), fr=iceFrac(sl);
   document.getElementById('tMain').textContent=fmtYears(t);
   document.getElementById('tSub').textContent=calendar(t);
   document.getElementById('sSea').textContent=(sl>0?'+':'')+Math.round(sl)+' m';
@@ -367,5 +366,14 @@ EVENTS.slice().sort(function(a,b){return b.t0-a.t0;}).forEach(function(e){
   jump.appendChild(b);
 });
 
+var sea;
+try{
+  sea=await loadSeaLevel('data/sealevel_spratt_lisiecki_2016_0-300ka.csv');
+}catch(err){
+  var m=document.createElement('p');m.className='note';m.setAttribute('role','alert');
+  m.textContent='The sea-level data could not be loaded ('+err.message+'). If you opened this page from a file, serve the folder instead, for example: python3 -m http.server';
+  document.querySelector('.ctl').before(m);
+  throw err;
+}
 applyScale();
 if(window.ResizeObserver){new ResizeObserver(function(){applyScale();}).observe(svg);}
