@@ -10,10 +10,14 @@ Keywords: human evolution, ancient DNA, archaeogenetics, human migration map, Ou
 
 ## Run it
 
-No build step and no dependencies. The page loads data files at run time, so serve the folder over HTTP (opening `index.html` directly from disk will not work):
+No build step and no dependencies for the main page. It loads data files at run time, so serve the folder over HTTP (browsers block this from `file://`, so double-clicking `index.html` shows a notice instead of the atlas):
 
     python3 -m http.server 8000
     # then open http://localhost:8000/
+
+**Open from disk:** `atlas-standalone.html` is the whole atlas in one file (scripts and data inlined, about 560 KB). Double-click it. It is generated, so do not edit it. After changing any source file or data file, regenerate it:
+
+    python3 tools/build_standalone.py
 
 ## Publish on GitHub Pages
 
@@ -31,6 +35,8 @@ Settings > Pages > Deploy from a branch > `main` > `/ (root)`. The site appears 
 | `js/ice.js` | ice-sheet layer: loads time-sliced GeoJSON at run time |
 | `js/shelf.js` | continental-shelf layer: loads depth-band GeoJSON at run time |
 | `data/` | the CSV and GeoJSON files, and `SOURCES.txt` (source, citation, licence of each) |
+| `atlas-standalone.html` | generated single-file copy that opens from disk (do not edit) |
+| `tools/build_standalone.py` | builds `atlas-standalone.html` from the sources (standard library only) |
 | `tools/build_ice_shelf.py` | rebuilds the ice and shelf GeoJSON from the original datasets |
 | `docs/HANDOFF.md` | context and starter prompt for continuing the work |
 | `llms.txt`, `robots.txt`, `sitemap.xml` | discovery files for AI agents and search engines |

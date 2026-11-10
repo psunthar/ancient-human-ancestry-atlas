@@ -120,6 +120,16 @@
 </footer>
 </div>
 
+<!--FILE-WARNING-->
+<script>
+/* Browsers block ES modules and fetch() from file://, so the module script below never runs there. */
+if(location.protocol==='file:'){document.addEventListener('DOMContentLoaded',function(){
+  var p=document.createElement('p');p.className='wip';p.setAttribute('role','alert');
+  p.innerHTML='This page loads its data at run time and cannot run from a file on disk. Open <a href="atlas-standalone.html">atlas-standalone.html</a> instead, or serve this folder with <code>python3 -m http.server</code> and open http://localhost:8000/.';
+  document.querySelector('header').appendChild(p);
+});}
+</script>
+<!--/FILE-WARNING-->
 <script type="module" src="js/app.js"></script>
 </body>
 </html>
