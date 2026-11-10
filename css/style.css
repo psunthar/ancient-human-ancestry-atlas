@@ -91,3 +91,8 @@ svg.tree{display:block;min-width:860px;width:100%;height:auto;touch-action:pan-y
 a{color:var(--accent)}
 section{margin-top:24px}
 .wip{margin:10px 0 8px;padding:9px 12px;border:1px solid var(--tag-after);border-left-width:4px;border-radius:8px;background:var(--panel);color:var(--ink);font-size:14px;max-width:80ch}
+.pill.old{color:#b3261e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill.old{color:#ff8a80}}
+:root[data-theme="dark"] .pill.old{color:#ff8a80}
+.oldnote{margin:4px 0 0;font-size:13.5px;color:var(--muted);border-left:3px solid #b3261e;padding-left:8px}
+[hidden]{display:none!important}

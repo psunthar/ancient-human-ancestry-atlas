@@ -53,7 +53,7 @@ The three data layers (`sealevel.js`, `ice.js`, `shelf.js`) are independent modu
 | `DOM setup` | draws land, shelf, ice, routes, population circles and event markers |
 | `state and update` | `update()` redraws everything for the current time; `applyScale()` keeps labels and lines a constant size when the region zoom changes |
 
-Content lives in `js/data/`: `GROUPS` (circles with keyframes `[kya, lon, lat, radius_deg]`), `ROUTES` (paths; longitudes above 180 continue past the date line; `dash:true` is a sea crossing), `EVENTS` (cards and markers; `tag` is `book`, `after`, `hyp` or `ctx`), `LANES`, `LINKS` and `MARKS` (lineage tree). To add an event, add an object to `EVENTS`, and a circle, route, lane link or mark if it needs one.
+Content lives in `js/data/`: `GROUPS` (circles with keyframes `[kya, lon, lat, radius_deg]`), `ROUTES` (paths; longitudes above 180 continue past the date line; `dash:true` is a sea crossing), `EVENTS` (cards and markers; `tag` is `book`, `after`, `hyp` or `ctx`), `LANES`, `LINKS` and `MARKS` (lineage tree). An event can carry an `outdated:'note'` field: a claim of the book that later research has revised. It gets a red "Outdated" tag and the note, and the "Outdated claims" checkbox above the map shows or hides it (on the map, in the cards and in the jump list). Add notes only after checking the primary paper. To add an event, add an object to `EVENTS`, and a circle, route, lane link or mark if it needs one.
 
 ## What is approximate
 
