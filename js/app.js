@@ -1,5 +1,8 @@
-import {LAND,BLACKSEA,CASPIAN,SHELF,ICE,GREENLAND} from './data/geography.js';
+import {LAND,BLACKSEA,CASPIAN,GREENLAND} from './data/geography.js';
+import {ICE} from './data/ice_schematic.js';
 import {loadSeaLevel} from './sealevel.js';
+import {loadIce} from './ice.js';
+import {loadShelf} from './shelf.js';
 import {GROUPS,GCOL,GBY} from './data/populations.js';
 import {ROUTES} from './data/routes.js';
 import {EVENTS} from './data/events.js';
@@ -23,16 +26,34 @@ function pFromT(t){for(var i=1;i<TK.length;i++){if(t>=TK[i]){var f=(TK[i-1]-t)/(
 
 function iceFrac(sl){return clamp((-sl-10)/115,0,1);}
 
+/* ---------- runtime data layers (each is a separate module that loads its own file) ---------- */
+var sea, ice, shelf;
+try{
+  var layers=await Promise.all([
+    loadSeaLevel('data/sealevel_spratt_lisiecki_2016_0-300ka.csv'),
+    loadIce('data/ice_paleomist_1.0.geojson'),
+    loadShelf('data/shelf_etopo2022.geojson')
+  ]);
+  sea=layers[0];ice=layers[1];shelf=layers[2];
+}catch(err){
+  var m=document.createElement('p');m.className='note';m.setAttribute('role','alert');
+  m.textContent='Map data could not be loaded ('+err.message+'). If you opened this page from a file, serve the folder instead, for example: python3 -m http.server';
+  document.querySelector('.ctl').before(m);
+  throw err;
+}
+function multiPath(polys){return polys.map(function(rings){return rings.map(polyPath).join('');}).join('');}
+
 /* ---------- DOM setup ---------- */
 var svg=document.getElementById('map');
 var gShelf=el('g',{},svg), gLand=el('g',{},svg), gIce=el('g',{},svg), gRoute=el('g',{},svg), gPop=el('g',{},svg), gLines=el('g',{},svg), gEv=el('g',{},svg);
 svg.insertBefore(el('rect',{x:-1200,y:-100,width:3400,height:H+200,fill:'var(--sea)'},null),gShelf);
 
-SHELF.forEach(function(s){s.el=el('path',{d:polyPath(s.p),fill:'var(--shelf)',opacity:0},gShelf);});
+shelf.bands.forEach(function(b){b.el=el('path',{d:multiPath(b.polygons),fill:'var(--shelf)','fill-rule':'evenodd',opacity:0},gShelf);});
 LAND.forEach(function(p){el('path',{d:polyPath(p),fill:'var(--land)',stroke:'var(--land)','stroke-width':0.6,'stroke-linejoin':'round'},gLand);});
 el('path',{d:polyPath(BLACKSEA),fill:'var(--sea)'},gLand);
 el('path',{d:polyPath(CASPIAN),fill:'var(--sea)'},gLand);
 el('path',{d:polyPath(GREENLAND),fill:'var(--ice)',stroke:'var(--ice-line)','stroke-width':0.8,'stroke-linejoin':'round'},gIce);
+ice.slices.forEach(function(s){s.el=el('path',{d:multiPath(s.polygons),fill:'var(--ice)',stroke:'var(--ice-line)','stroke-width':0.6,'stroke-linejoin':'round','fill-rule':'evenodd',opacity:0},gIce);});
 ICE.forEach(function(s){var c=centroid(s.p);s.c=c;s.el=el('path',{d:polyPath(s.p),fill:'var(--ice)',stroke:'var(--ice-line)','stroke-width':0.9,'stroke-linejoin':'round',opacity:0.92},gIce);});
 
 /* routes */
@@ -185,14 +206,15 @@ function update(){
   gShelf.style.display=showIce?'':'none';
   gIce.style.display=showIce?'':'none';
   if(showIce){
-    SHELF.forEach(function(s){
-      var a=clamp(((-sl)-(s.d-8))/16,0,1);
-      s.el.setAttribute('opacity',a.toFixed(2));
-    });
-    var sc=Math.pow(fr,0.65);
+    shelf.bands.forEach(function(b){b.el.setAttribute('opacity',shelf.exposure(b,sl).toFixed(2));});
+    /* real ice outlines where data exist (0 to ice.maxAge kya), schematic scaled outlines beyond */
+    var ow={};
+    ice.layers(t).forEach(function(l){ow[l.index]=l.opacity;});
+    ice.slices.forEach(function(s,i){s.el.setAttribute('opacity',((ow[i]||0)*0.92).toFixed(3));});
+    var sw=ice.schematicWeight(t), sc=Math.pow(fr,0.65);
     ICE.forEach(function(s){
-      if(sc<0.04){s.el.setAttribute('opacity',0);return;}
-      s.el.setAttribute('opacity',0.92);
+      if(sw<=0||sc<0.04){s.el.setAttribute('opacity',0);return;}
+      s.el.setAttribute('opacity',(0.92*sw).toFixed(3));
       s.el.setAttribute('transform','translate('+s.c[0]+' '+s.c[1]+') scale('+sc.toFixed(3)+') translate('+(-s.c[0])+' '+(-s.c[1])+')');
     });
   }
@@ -366,14 +388,5 @@ EVENTS.slice().sort(function(a,b){return b.t0-a.t0;}).forEach(function(e){
   jump.appendChild(b);
 });
 
-var sea;
-try{
-  sea=await loadSeaLevel('data/sealevel_spratt_lisiecki_2016_0-300ka.csv');
-}catch(err){
-  var m=document.createElement('p');m.className='note';m.setAttribute('role','alert');
-  m.textContent='The sea-level data could not be loaded ('+err.message+'). If you opened this page from a file, serve the folder instead, for example: python3 -m http.server';
-  document.querySelector('.ctl').before(m);
-  throw err;
-}
 applyScale();
 if(window.ResizeObserver){new ResizeObserver(function(){applyScale();}).observe(svg);}

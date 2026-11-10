@@ -5,3 +5,19 @@ Citation: Spratt, R.M. & Lisiecki, L.E. (2016) A Late Pleistocene sea level stac
 License of underlying data: not stated in the files retrieved; paper is CC BY 3.0 (unverified here). Check before redistribution.
 Note: the file gives +8.5 m at 0 ka (as in source); the stack is a PC1 reconstruction, not anchored to 0 m today. The page (js/sealevel.js) subtracts the 0 ka value at load time; the CSV itself is not modified.
 NOAA's file header asks users to cite the original publication, the online resource and the date accessed (accessed 2026-11-10).
+
+
+==== ice_paleomist_1.0.geojson (derived) ====
+Source: PaleoMIST 1.0 global ice sheet reconstruction, file ice_reconstruction/global_grid/reconstruction_1_degree.nc (variable ice_thickness, 33 time slices 0-80 ka at 2.5 ka steps, 1 degree grid) from the archive Gowan_ice_reconstruction.zip.
+Dataset: Gowan, E.J. (2019): Global ice sheet reconstruction for the past 80000 years. PANGAEA, doi:10.1594/PANGAEA.905800. https://doi.pangaea.de/10.1594/PANGAEA.905800
+Paper: Gowan, E.J., Zhang, X., Khosravi, S. et al. (2021) A new global ice sheet reconstruction for the past 80 000 years. Nature Communications 12, 1199, doi:10.1038/s41467-021-21469-w
+License: CC BY 4.0 (stated in the PANGAEA metadata). Changes made: contour of grounded ice thickness >= 10 m after 2x bilinear upsampling, clipped to 85N-58S, simplified (0.25 deg tolerance), polygons under 0.6 square degrees dropped, coordinates rounded to 0.1 deg. Built by tools/build_ice_shelf.py. Accessed 2026-11-10.
+Not covered: before 80 ka (the page falls back to schematic outlines; see js/data/ice_schematic.js).
+Note: the dataset is a model-and-constraint reconstruction (ICESHEET with isostatic adjustment). Time slices are 2.5 kyr apart, so the margins are coarse in time as well as space.
+Not used: Dalton et al. NADI-2 / DATED-1 margins. PaleoMIST (which uses those margins as constraints) covers North America, Eurasia and the whole globe from one consistent source, so one dataset was used instead of two.
+
+==== shelf_etopo2022.geojson (derived) ====
+Source: ETOPO 2022 Global Relief Model, 60 arc-second bed elevation (ice-sheet bed variant), NOAA National Centers for Environmental Information. doi:10.25921/fd45-gt74. Read through NOAA's OPeNDAP service https://www.ngdc.noaa.gov/thredds/dodsC/global/ETOPO2022/60s/60s_bed_elev_netcdf/ETOPO_2022_v1_60s_N90W180_bed.nc , taking every 15th sample (15 arc-minutes, 0.25 deg), accessed 2026-11-10.
+License: US Government work, public domain (copyright line in the file: DOC/NOAA/NESDIS/NCEI). Cite NOAA NCEI as the source.
+Changes made: Gaussian smoothing (sigma 1 cell), filled contours between 0-30, 30-60, 60-90 and 90-130 m below present sea level, simplified (0.15 deg), small polygons dropped, rounded to 0.01 deg. Built by tools/build_ice_shelf.py.
+Not used: GEBCO (ETOPO 2022 is served in subsets, GEBCO needs a multi-GB download for this purpose).
