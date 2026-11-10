@@ -72,7 +72,7 @@ ROUTES.forEach(function(r){
 GROUPS.forEach(function(g){
   g.items=[0,1].map(function(k){
     var gr=el('g',{},gPop);
-    var c=el('circle',{r:10,fill:g.col,'fill-opacity':0.3,stroke:g.col,'stroke-width':1.6},gr);
+    var c=el('ellipse',{rx:10,ry:10,fill:g.col,'fill-opacity':0.3,stroke:g.col,'stroke-width':1.6},gr);
     if(g.dash){c.setAttribute('stroke-dasharray','5 3');}
     var t=el('text',{'text-anchor':'middle',class:'lbl'},gr);t.textContent=g.short;
     return {g:gr,c:c,t:t};
@@ -232,17 +232,17 @@ function update(){
     var fin=t0>=300?1:(t0-t)/w, fout=t1<=0?1:(t-t1)/w;
     var op=clamp(Math.min(fin,fout),0,1);
     var k=interp(g.keys,t);
-    var lon=normLon(k[1]),x=X(lon),y=Y(k[2]),rpx=k[3]*K;
+    var lon=normLon(k[1]),x=X(lon),y=Y(k[2]),rpx=k[3]*K/Math.max(0.33,Math.cos(k[2]*Math.PI/180)),rpy=k[3]*K;   /* radius is a ground distance: wider in longitude at high latitude */
     g.cur={x:x,y:y,op:op};
     g.items[0].g.setAttribute('opacity',op.toFixed(2));
-    g.items[0].c.setAttribute('cx',x);g.items[0].c.setAttribute('cy',y);g.items[0].c.setAttribute('r',rpx);
+    g.items[0].c.setAttribute('cx',x);g.items[0].c.setAttribute('cy',y);g.items[0].c.setAttribute('rx',rpx);g.items[0].c.setAttribute('ry',rpy);
     g.items[0].t.setAttribute('x',x);g.items[0].t.setAttribute('y',y+3);
     var cx2=null;
     if(x-rpx<0){cx2=x+W;}else if(x+rpx>W){cx2=x-W;}
     if(cx2===null){g.items[1].g.setAttribute('opacity',0);}
     else{
       g.items[1].g.setAttribute('opacity',op.toFixed(2));
-      g.items[1].c.setAttribute('cx',cx2);g.items[1].c.setAttribute('cy',y);g.items[1].c.setAttribute('r',rpx);
+      g.items[1].c.setAttribute('cx',cx2);g.items[1].c.setAttribute('cy',y);g.items[1].c.setAttribute('rx',rpx);g.items[1].c.setAttribute('ry',rpy);
       g.items[1].t.setAttribute('x',cx2);g.items[1].t.setAttribute('y',y+3);
     }
     if(op>0.05){activeGroups.push(g);}
